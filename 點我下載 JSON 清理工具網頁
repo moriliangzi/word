@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>JSON 清除工具</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h2>💾 上傳 JSON 檔案，自動刪除 <code>isHidden: true</code> 的內容</h2>
+  <input type="file" id="fileInput" accept=".json">
+  <button onclick="processFile()">▶️ 處理並下載</button>
+  <p id="status" style="color: green; font-weight: bold;"></p>
+  <script>
+    function processFile() {
+      const input = document.getElementById('fileInput');
+      const status = document.getElementById('status');
+
+      if (!input.files[0]) {
+        alert('請先選擇一個 JSON 檔案');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.history && Array.isArray(data.history)) {
+            data.history = data.history.filter(item => item.isHidden !== true);
+          }
+          const cleaned = JSON.stringify(data, null, 2);
+          const blob = new Blob([cleaned], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "cleaned.json";
+          a.click();
+          status.textContent = "✅ 處理完成，已下載乾淨版本！";
+        } catch (err) {
+          alert("⚠️ JSON 解析錯誤，請確認檔案格式正確");
+        }
+      };
+      reader.readAsText(input.files[0]);
+    }
+  </script>
+</body>
+</html>
